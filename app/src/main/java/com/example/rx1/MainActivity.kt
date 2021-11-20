@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "hello"
     lateinit var textView: TextView
     lateinit var observable : Observable<String>
-    lateinit var observer: Observer<String>
+    lateinit var observer: DisposableObserver<String>
     var disposable: Disposable? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,11 +26,7 @@ class MainActivity : AppCompatActivity() {
         observable = Observable.just("Hello Rx Java","Gaurav","Pranav","Aman")
         observable.subscribeOn(Schedulers.io())
         observable.observeOn(AndroidSchedulers.mainThread())
-        observable.subscribe(object : Observer<String>{
-            override fun onSubscribe(d: Disposable?) {
-               disposable = d
-            }
-
+        observer = object : DisposableObserver<String>() {
             override fun onNext(t: String?) {
                 textView.setText(t)
             }
@@ -43,11 +39,12 @@ class MainActivity : AppCompatActivity() {
                 Log.i(TAG,"Task has been completed")
             }
 
-        })
+        }
+        observable.subscribe(observer)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        disposable?.dispose()
+        observer.dispose()
     }
 }
